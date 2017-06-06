@@ -45,6 +45,8 @@ gem "omniauth-github", '1.1.1'
 # Accessing user info GitHub
 gem "octokit", "~> 4.0"
 
+# For Making Awesome Charts
+gem "rails-data-explorer"
 
 
 # END MY ADDED GEMS ######################################################

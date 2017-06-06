@@ -2,6 +2,9 @@
 
 # Overview
 
+
+## The Issues
+
 - Each issue is a task
 - Each issue requires a time estimate in hours
 	+ Estimate should be between 1 and 16
@@ -10,7 +13,49 @@
 - The last comment before the issue is closed must contain the actual time taken
 - Each issue must be assigned to exactly one developer
 - Issues labeled 'split' will not be counted
+- Every time an issue is closed,
 
+## Seeing Reports
+
+- Users can log in with GitHub
+- User can pick a repository and see likely ship dates for different milestones
+
+
+## Widgets
+
+- Box and whisker developer plotter
+	+ [example](https://i2.wp.com/www.joelonsoftware.com/wp-content/uploads/2007/10/26ebs5.png?zoom=2&resize=460%2C238&ssl=1)
+- Priority Toggle
+	+ A select field with
+		* With only urgent features
+		* Urgent or high priority only
+		* Important or better
+		* Medium or better
+		* Moderate or better
+		* Low or better
+		* All features
+	+ Alters box and whisker accordlingly
+- Ship date confidence over time
+	+ [example](https://i2.wp.com/www.joelonsoftware.com/wp-content/uploads/2007/10/26ebs6.png?zoom=2&resize=460%2C246&ssl=1)
+- 
+
+
+## The Database
+
+- User
+	+ id
+	+ GitHub Username
+	+ Name
+
+Task
+	+ id (same as one from github)
+	+ 
+
+
+- History
+	+ task_id
+	+ 
+	+ user_id
 
 ## The Labels
 
