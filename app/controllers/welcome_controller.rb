@@ -7,6 +7,11 @@ class WelcomeController < ApplicationController
 
 		# Temporarily commented out
 		#@velocity_history = get_velocity_history
+
+		Octokit.configure do |c|
+			c.access_token = access_token
+		end
+
 		@client = Octokit::Client.new(
 				:access_token => access_token
 		)
@@ -21,6 +26,8 @@ class WelcomeController < ApplicationController
 				@boxplots << get_box_and_whisker(ms)
 			end
 		end
+
+		update_past_velocities
 
 		#ds = RailsDataExplorer::DataSet.new([0.5,0.9,1, 0.3, 0.3], 'Example Chart')
 		#@rde = RailsDataExplorer::Chart::BoxPlot.new(ds)
@@ -60,40 +67,61 @@ class WelcomeController < ApplicationController
 		end
 
 		def get_milestones(repo_name)
+
 			milestones = @client.milestones(repo_name, {:per_page => 100, :state => :open })
 		end
 
 		def get_box_and_whisker(milestone)
 			#puts milestone.rels[:lables]
-			issues = @client.issues(nil, {:per_page => 100, :state => :open, :milestone => milestone.number })
+			repo_name = milestone.url.split('/repos/')[1].split('/milestones')[0]
+			issues = Octokit.issues(repo_name, {:per_page => 100, :state => :open, :milestone => milestone.number })
 			issues = paginate(issues, 100, 10000)
 
 			issues.each do |i|
-				puts i.title
+				puts i.title + i.assignee.login
 			end
 		end
 
-		def get_ship_date(milestone)
-			issues = @client.milestones(nil, {:per_page => 100, :state => :open })
+		
+
+		def update_past_velocities
+			pv = get_velocity_history
+			pv.keys.each do |login|
+				collab = Collaborator.find_by_login(login)
+				history = pv[login]
+				if collab.nil?
+					collab = Collaborator.new(:login => login, :history => history)
+				else
+					collab.history = history
+				end
+				collab.save
+			end
 		end
 
 		def get_velocity_history
-			result = []
 			result = get_past_velocities
 
 			# We assume the worst about the users prediction ability until they
 			# prove otherwise
-			if result.length < 6
-				result = [0.5, 1.7, 0.2, 1.2, 0.9, 13.0]
+			result.keys.each do |login|
+				if result[login].length < 6
+					result[login] = [0.5, 1.7, 0.2, 1.2, 0.9, 13.0]
+				end
 			end
+			
 			result
 		end
 
 		def get_past_velocities
-			result = []
+			result = {}
 			
 			# Get Past Velocities
-			issues = @client.issues(nil, {:per_page => 100, :state => :closed })
+			
+			# Just current client issues
+			#issues = @client.issues(nil, {:per_page => 100, :state => :closed })
+			
+			# All issues the logged in user can see
+			issues = Octokit.issues(nil, {:per_page => 100, :state => :closed, :filter => :all})
 			issues = paginate(issues, 100, 500)
 
 
@@ -108,11 +136,17 @@ class WelcomeController < ApplicationController
 			#end
 
 			issues.each do |issue|
-				v = get_velocity(issue)
-				unless v.nil?
-					result << v
+				unless issue.assignee.nil?
+					v = get_velocity(issue)
+					unless v.nil?
+						if result[issue.assignee.login].nil?
+							result[issue.assignee.login] = []
+						end
+						result[issue.assignee.login] << v
+					end
 				end
 			end
+			puts result
 			result
 		end
 
@@ -122,7 +156,7 @@ class WelcomeController < ApplicationController
 			while result.length < max and continue
 				puts 'requing'
 				#new_data = @client.last_response.rels[:next].get.data
-				new_data = @client.get @client.last_response.rels[:next].href
+				new_data = Octokit.get Octokit.last_response.rels[:next].href
 				result.concat new_data
 				continue = new_data.length == per_page
 			end
