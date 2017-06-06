@@ -1,12 +1,26 @@
+
+
+
+
 <% if current_user %>
-	<p>Welcome, <%= current_user.name %> ye bitch</p>
+	<p>Welcome, <%= current_user.name %></p>
 
 
-	<% @repos.each do |repo| %>
-		<p><%= repo %></p>
+	<%= form_tag("/choose_repo", method: "post") do %>
+		<%= select_tag(:repository, options_for_select(@repos, @selected_repo)) %>
+		<%= submit_tag("Display Estimates") %>
 	<% end %>
+
+	<% unless @selected_repo.nil? %>
+		<p><%= @selected_repo %></p>
+	<% end %>
+
+
+
+
 
 
 <% else %>
 	<%= link_to "Sign in with Github", "/auth/github" %>
 <% end %>
+

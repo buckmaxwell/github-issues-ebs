@@ -11,14 +11,25 @@ class WelcomeController < ApplicationController
 				:access_token => access_token
 		)
 		@repos = get_repos
-		puts @repos
-		
+		@selected_repo = get_selected_repo
 
 		#@repos = @client.repos[3].inspect
 		#puts @repos
 	end
 
+	def choose_repos
+		puts params[:repos]
+	end
+
 	private
+
+		def get_selected_repo
+			unless selected_repository.nil?
+				selected_repository
+			else
+				@repos[0]
+			end
+		end
 
 		def get_repos
 			repos = @client.repos(nil, {:per_page => 100, :state => :closed })
@@ -37,7 +48,7 @@ class WelcomeController < ApplicationController
 		end
 
 		def get_milestones(repo_name)
-			issues = @client.milestones('LeahK/CowCareMobileApplication', {:per_page => 100, :state => :open })
+			issues = @client.milestones(repo_name, {:per_page => 100, :state => :open })
 		end
 
 		def get_ship_date(milestone)

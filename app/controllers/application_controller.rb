@@ -12,6 +12,10 @@ class ApplicationController < ActionController::Base
 		@access_token = session[:access_token]
 	end
 
+	def selected_repository
+		@selected_repository = session[:selected_repository]
+	end
+
 	def authorize
     	redirect_to '/signin' unless current_user
   	end
