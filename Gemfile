@@ -42,6 +42,10 @@ gem 'jbuilder', '~> 2.5'
 # Authenticating GitHub
 gem "omniauth-github", '1.1.1'
 
+# Accessing user info GitHub
+gem "octokit", "~> 4.0"
+
+
 
 # END MY ADDED GEMS ######################################################
 
