@@ -15,6 +15,10 @@
 		<p><%= @selected_repo %></p>
 	<% end %>
 
+	<% @milestones.each do |milestone| %>
+		<p><%= milestone.title %></p>
+	<% end %>
+
 
 
 

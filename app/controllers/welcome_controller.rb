@@ -13,6 +13,8 @@ class WelcomeController < ApplicationController
 		@repos = get_repos
 		@selected_repo = get_selected_repo
 
+		@milestones = get_milestones(@selected_repo)
+
 		#@repos = @client.repos[3].inspect
 		#puts @repos
 	end
@@ -48,7 +50,7 @@ class WelcomeController < ApplicationController
 		end
 
 		def get_milestones(repo_name)
-			issues = @client.milestones(repo_name, {:per_page => 100, :state => :open })
+			milestones = @client.milestones(repo_name, {:per_page => 100, :state => :open })
 		end
 
 		def get_ship_date(milestone)
