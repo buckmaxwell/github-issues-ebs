@@ -1,5 +1,12 @@
 <% if current_user %>
 	<p>Welcome, <%= current_user.name %> ye bitch</p>
+
+
+	<% @repos.each do |repo| %>
+		<p><%= repo %></p>
+	<% end %>
+
+
 <% else %>
 	<%= link_to "Sign in with Github", "/auth/github" %>
 <% end %>

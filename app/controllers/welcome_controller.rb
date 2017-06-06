@@ -5,27 +5,67 @@ class WelcomeController < ApplicationController
 
 	def index
 
-		@velocity_history = get_past_velocities
-		puts @velocity_history
+		# Temporarily commented out
+		#@velocity_history = get_velocity_history
+		@client = Octokit::Client.new(
+				:access_token => access_token
+		)
+		@repos = get_repos
+		puts @repos
+		
 
-		#@repos = octokit_client.repos[3].inspect
+		#@repos = @client.repos[3].inspect
 		#puts @repos
 	end
 
 	private
 
+		def get_repos
+			repos = @client.repos(nil, {:per_page => 100, :state => :closed })
+			#next_url = @client.last_response.rels[:next]
+			continue = repos.length == 100
+			while repos.length < 500 and continue
+				new_data = @client.last_response.rels[:next].get.data
+				repos.concat new_data
+				continue = new_data.length == 100
+			end
+			new_repos = []
+			repos.each do |repo|
+				new_repos << repo.full_name
+			end
+			new_repos
+		end
+
+		def get_milestones(repo_name)
+			issues = @client.milestones('LeahK/CowCareMobileApplication', {:per_page => 100, :state => :open })
+		end
+
+		def get_ship_date(milestone)
+			issues = @client.milestones(nil, {:per_page => 100, :state => :open })
+
+		end
+
+		def get_velocity_history
+			result = []
+			result = get_past_velocities
+
+			# We assume the worst about the users prediction ability until they
+			# prove otherwise
+			if result.length < 6
+				result = [0.5, 1.7, 0.2, 1.2, 0.9, 13.0]
+			end
+			result
+		end
+
 		def get_past_velocities
 			result = []
-			# Used as a prefix for photos and images
-			octokit_client = Octokit::Client.new(
-				:access_token => access_token
-			)
+			
 			# Get Past Velocities
-			issues = octokit_client.issues(nil, {:per_page => 100, :state => :closed })
-			#next_url = octokit_client.last_response.rels[:next]
+			issues = @client.issues(nil, {:per_page => 100, :state => :closed })
+			#next_url = @client.last_response.rels[:next]
 			continue = issues.length == 100
 			while issues.length < 500 and continue
-				new_data = octokit_client.last_response.rels[:next].get.data
+				new_data = @client.last_response.rels[:next].get.data
 				issues.concat new_data
 				continue = new_data.length == 100
 			end
