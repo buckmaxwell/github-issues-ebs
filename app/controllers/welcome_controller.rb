@@ -21,9 +21,15 @@ class WelcomeController < ApplicationController
 		@milestones = get_milestones(@selected_repo)
 
 		@boxplots = []
+		@data_stores = []
+		@shipping_prob = []
 		@milestones.each do |ms|
 			unless ms.nil?
-				@boxplots << get_box_and_whisker(ms)
+				#@boxplots << get_box_and_whisker(ms)
+				ds = get_data_store(ms)
+				@data_stores << ds
+				@boxplots << get_google_boxplot(ds)
+				@shipping_prob << get_probability_of_shipping_by_hours(ds)
 			end
 		end
 
@@ -47,7 +53,7 @@ class WelcomeController < ApplicationController
 	end
 
 	def choose_repos
-		puts params[:repos]
+		#puts params[:repos]
 	end
 
 	private
@@ -81,7 +87,7 @@ class WelcomeController < ApplicationController
 			milestones = @client.milestones(repo_name, {:per_page => 100, :state => :open })
 		end
 
-		def get_box_and_whisker(milestone)
+		def get_data_store(milestone)
 			#puts milestone.rels[:lables]
 
 			data_store = {}
@@ -118,16 +124,36 @@ class WelcomeController < ApplicationController
 						 	:min => sfs[login].sum
 						}
 					end
-					puts data_store
-					puts data_store[login][:sample_futures]
+					#puts data_store
+					#puts data_store[login][:sample_futures]
 					data_store[login][:sample_futures] << sfs[login].sum
 					data_store[login][:max] = [data_store[login][:max], sfs[login].sum ].max
 					data_store[login][:min] = [data_store[login][:min], sfs[login].sum ].min
 				end
 			end
-			url = get_google_boxplot(data_store)
-			puts url
-			url
+			data_store
+			#url = get_google_boxplot(data_store)
+			#puts url
+			#url
+		end
+
+		def get_probability_of_shipping_by_hours(data_store)
+			# [[percent_likely,hours],[1,3],[4,15],[5,16], etc.]
+			result = []
+			tmax = 0 # true maximum
+			critical_dev = '' # the developer who has the tmax
+			data_store.keys.each do |login|
+				tmax = [data_store[login][:max],tmax].max
+				critical_dev = login
+			end
+
+			100.times do |percent|
+				# get shipping probability
+				hour = data_store[critical_dev][:sample_futures].percentile(percent)
+				result << [percent, hour]
+			end
+			puts result.to_s
+			result
 		end
 
 
@@ -170,13 +196,12 @@ class WelcomeController < ApplicationController
 				collabs = data_store.keys.to_s[1...-1].gsub(', ', '|')
 			end
 
-			collabs = collabs[0...-1]
+			collabs = collabs[0...-1].delete('"')
 			collabs_data =  collabs_data[0...-1]
 			l = data_store.keys.length.to_s
 			devs = collabs.delete('"').gsub('|', ',+')
-			puts devs
 
-			url = "https://chart.googleapis.com/chart?chs=600x338&cht=ls&chd=t0:#{collabs_data}&chm=F,FF9900,0,1:#{l},40|H,0CBF0B,0,1:#{l},1:20|H,000000,4,1:#{l},1:40|H,0000FF,3,1:#{l},1:20|o,FF0000,5,-1,7|o,FF0000,6,-1,7&chxt=y,x&chdl=Min/Max|90th+Percentile|25th+to+75th+Percentile|Median|10th+Percentile&chco=FF0000,0000FF,FF9900,000000,0CBF0B&chl=#{collabs}&chtt=Hours+Till+Completion+By+Developer|#{devs}"
+			url = "https://chart.googleapis.com/chart?chs=600x338&cht=ls&chd=t0:#{collabs_data}&chm=F,FF9900,0,1:#{l},40|H,0CBF0B,0,1:#{l},1:20|H,000000,4,1:#{l},1:40|H,0000FF,3,1:#{l},1:20|o,FF0000,5,-1,7|o,FF0000,6,-1,7&chxt=y,x&chdl=Min/Max|90th+Percentile|25th+to+75th+Percentile|Median|10th+Percentile&chco=FF0000,0000FF,FF9900,000000,0CBF0B&chl=#{collabs}&chtt=Hours+Till+Completion+By+Developer|#{devs}&chg=5,5"
 			url
 		end
 
@@ -244,7 +269,6 @@ class WelcomeController < ApplicationController
 					end
 				end
 			end
-			puts result
 			result
 		end
 
