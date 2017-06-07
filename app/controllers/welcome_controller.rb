@@ -28,7 +28,7 @@ class WelcomeController < ApplicationController
 				#@boxplots << get_box_and_whisker(ms)
 				ds = get_data_store(ms)
 				@data_stores << ds
-				@boxplots << get_google_boxplot(ds)
+				@boxplots << get_box_plot_data(ds)
 				@shipping_prob << get_probability_of_shipping_by_hours(ds)
 			end
 		end
@@ -143,20 +143,42 @@ class WelcomeController < ApplicationController
 			tmax = 0 # true maximum
 			critical_dev = '' # the developer who has the tmax
 			data_store.keys.each do |login|
-				tmax = [data_store[login][:max],tmax].max
-				critical_dev = login
+				old_tmax = tmax
+				tmax = [data_store[login][:max],old_tmax].max
+				if old_tmax < tmax
+					critical_dev = login
+				end
 			end
 
 			100.times do |percent|
 				# get shipping probability
 				hour = data_store[critical_dev][:sample_futures].percentile(percent)
-				result << [percent, hour]
+				result << [hour, percent]
 			end
 			puts result.to_s
 			result
 		end
 
+		def get_box_plot_data(data_store)
+			result = []
+			data_store.keys.each do |login|
+				row = []
+				sfs = data_store[login][:sample_futures]
+				row << login # column label
+				2.times do |x|
+					row << sfs.max.round(1)
+					row << sfs.min.round(1)
+					row << sfs.percentile(25).round(1)
+					row << sfs.percentile(50).round(1)
+					row << sfs.percentile(75).round(1)
+				end
+				result << row
+			end
+			result
+		end
 
+
+		# UNUSED
 		def get_google_boxplot(data_store)
 			# first series is minimum values
 			# second series is 25%
@@ -336,6 +358,8 @@ end
 # More Outlier Data can be added if needed
 
 
+# https://developers.google.com/chart/interactive/docs/gallery/intervals
+# The new box plot
 
 
 

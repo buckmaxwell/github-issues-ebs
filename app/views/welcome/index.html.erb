@@ -14,10 +14,8 @@
 
 	<% @milestones.each_with_index do |milestone, i| %>
 		<h5><%=  @selected_repo + '/' %></h5><h3><%= milestone.title %></h3>
-		<img src=<%= @boxplots[i] %> alt=<%= milestone.title %> >
 
-
-		<hr>
+		<!-- Line Chart --> 
 		<div id=<%= "chart_div#{i.to_s}" %> ></div>
 		<script>
 			google.charts.load('current', {packages: ['corechart', 'line']});
@@ -27,17 +25,17 @@
 
 			      var data = new google.visualization.DataTable();
 			      data.addColumn('number', 'X');
-			      data.addColumn('number', 'Hours');
+			      data.addColumn('number', 'Percent Certainty');
 
 			      data.addRows(<%= raw @shipping_prob[i] %>);
 
 			      var options = {
 			      	title: 'Ready-to-Ship likelihood by hours from now',
 			        hAxis: {
-			          title: 'Percent Certainty'
+			          title: 'Hours From Now'
 			        },
 			        vAxis: {
-			          title: 'Hours'
+			          title: 'Percent Certainty'
 			        }
 			      };
 
@@ -46,6 +44,126 @@
 			      chart.draw(data, options);
 			    }
 		</script>
+
+
+		<!-- Box and Whisker -->
+		<div id=<%= "box_plot#{i.to_s}" %>></div>
+		<script>
+		    google.charts.load('current', {'packages':['corechart']});
+		    google.charts.setOnLoadCallback(drawBoxPlot);
+
+		    function drawBoxPlot() {
+
+		      
+		      var array = <%= raw @boxplots[i] %>
+
+		      var data = new google.visualization.DataTable();
+		      data.addColumn('string', 'x');
+		      data.addColumn('number', 'Maximum');
+		      data.addColumn('number', 'Minimum');
+		      data.addColumn('number', '25th Percentile');
+		      data.addColumn('number', '50th Percentile');
+		      data.addColumn('number', '75th Percentile');
+
+		      data.addColumn({id:'max', type:'number', role:'interval'});
+		      data.addColumn({id:'min', type:'number', role:'interval'});
+		      data.addColumn({id:'firstQuartile', type:'number', role:'interval'});
+		      data.addColumn({id:'median', type:'number', role:'interval'});
+		      data.addColumn({id:'thirdQuartile', type:'number', role:'interval'});
+
+		      data.addRows(array);
+
+		      /**
+		       * Takes an array of input data and returns an
+		       * array of the input data with the box plot
+		       * interval data appended to each row.
+		       */
+		      function getBoxPlotValues(array) {
+
+		        for (var i = 0; i < array.length; i++) {
+
+		          var arr = array[i].slice(1).sort(function (a, b) {
+		            return a - b;
+		          });
+
+		          var max = arr[arr.length - 1];
+		          var min = arr[0];
+		          var median = getMedian(arr);
+
+		          // First Quartile is the median from lowest to overall median.
+		          var firstQuartile = getMedian(arr.slice(0, 4));
+
+		          // Third Quartile is the median from the overall median to the highest.
+		          var thirdQuartile = getMedian(arr.slice(3));
+
+		          array[i][8] = max;
+		          array[i][9] = min
+		          array[i][10] = firstQuartile;
+		          array[i][11] = median;
+		          array[i][12] = thirdQuartile;
+		        }
+		        return array;
+		      }
+
+		      /*
+		       * Takes an array and returns
+		       * the median value.
+		       */
+		      function getMedian(array) {
+		        var length = array.length;
+
+		        /* If the array is an even length the
+		         * median is the average of the two
+		         * middle-most values. Otherwise the
+		         * median is the middle-most value.
+		         */
+		        if (length % 2 === 0) {
+		          var midUpper = length / 2;
+		          var midLower = midUpper - 1;
+
+		          return (array[midUpper] + array[midLower]) / 2;
+		        } else {
+		          return array[Math.floor(length / 2)];
+		        }
+		      }
+
+		      var options = {
+		          title:'Box Plot',
+		          height: 800,
+		          legend: {position: 'none'},
+		          hAxis: {
+		            gridlines: {color: '#fff'}
+		          },
+		          lineWidth: 0,
+		          series: [{'color': '#D3362D'}],
+		          intervals: {
+		            barWidth: 1,
+		            boxWidth: 1,
+		            lineWidth: 2,
+		            style: 'boxes'
+		          },
+		          interval: {
+		            max: {
+		              style: 'bars',
+		              fillOpacity: 1,
+		              color: '#777'
+		            },
+		            min: {
+		              style: 'bars',
+		              fillOpacity: 1,
+		              color: '#777'
+		            }
+		          }
+		      };
+
+		      var chart = new google.visualization.LineChart(document.getElementById('<%= "box_plot#{i.to_s}" %>'));
+
+		      chart.draw(data, options);
+		    }
+
+		</script>
+
+
 	<% end %>
 
 	<p><a href='/update_velocities'>Update Collaborator History</a></p>
