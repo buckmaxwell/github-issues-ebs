@@ -21,6 +21,7 @@ class SessionsController < ApplicationController
 
   	def choose_repo
   		session[:selected_repository] = params[:repository]
+  		session[:selected_priority] = params[:priority]
   		redirect_to root_url
   	end
 

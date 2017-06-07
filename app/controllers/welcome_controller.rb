@@ -20,6 +20,17 @@ class WelcomeController < ApplicationController
 
 		@milestones = get_milestones(@selected_repo)
 
+
+		@priority_labels = [
+			['Urgent only', 'urgent'],
+			['High or Urgent', 'urgent,high'],
+			['Important or higher', 'urgent,high,important'],
+			['Medium or higher', 'urgent,high,important,medium'],
+			['Moderate or greater', 'urgent,high,important,moderate'],
+			['Low or higher', 'urgent,high,important,moderate,low'],
+			['All features', 'urgent,high,important,moderate,low,none']
+		]
+		@selected_priority = get_selected_priority
 		@boxplots = []
 		@data_stores = []
 		@shipping_prob = []
@@ -57,6 +68,14 @@ class WelcomeController < ApplicationController
 	end
 
 	private
+
+		def get_selected_priority
+			unless selected_priority.nil?
+				selected_priority
+			else
+				@priority_labels[-1]
+			end
+		end
 
 		def get_selected_repo
 			unless selected_repository.nil?
@@ -100,9 +119,16 @@ class WelcomeController < ApplicationController
 			# Sample Future (sf1) example [6.7, 16, 3.3, 13.3, 32].sum => 71.3}
 			# 
 
+			# Imperfect - a request must be made between 1 and 7 times
+			issues = []
 			repo_name = milestone.url.split('/repos/')[1].split('/milestones')[0]
-			issues = Octokit.issues(repo_name, {:per_page => 100, :state => :open, :milestone => milestone.number })
-			issues = paginate(issues, 100, 10000)
+			@selected_priority.split(',').each do |label|
+				#puts label
+				issues_for_label = Octokit.issues(repo_name, {:per_page => 100, :state => :open, :milestone => milestone.number, :assignee => '*', :labels => label })
+				issues_for_label = paginate(issues_for_label, 100, 10000)
+				issues.concat issues_for_label
+			end
+			
 
 			# Populate Data Store
 			100.times do |x|
@@ -113,16 +139,22 @@ class WelcomeController < ApplicationController
 					if sfs[issue.assignee.login].nil?
 						sfs[issue.assignee.login] = []
 					end
-					sfs[issue.assignee.login] << get_estimate(issue)
+					issue_est = get_estimate(issue)
+					sfs[issue.assignee.login] <<  issue_est unless issue_est.nil?
+					if sfs[issue.assignee.login].empty?
+						 sfs.delete(issue.assignee.login)
+					end
 				end
 
 				sfs.keys.each do |login|
+					
 					if data_store[login].nil?
 						data_store[login] = {
 						 	:sample_futures => [],
 						 	:max => sfs[login].sum,
 						 	:min => sfs[login].sum
 						}
+						puts data_store
 					end
 					#puts data_store
 					#puts data_store[login][:sample_futures]
@@ -140,22 +172,24 @@ class WelcomeController < ApplicationController
 		def get_probability_of_shipping_by_hours(data_store)
 			# [[percent_likely,hours],[1,3],[4,15],[5,16], etc.]
 			result = []
-			tmax = 0 # true maximum
-			critical_dev = '' # the developer who has the tmax
-			data_store.keys.each do |login|
-				old_tmax = tmax
-				tmax = [data_store[login][:max],old_tmax].max
-				if old_tmax < tmax
-					critical_dev = login
+			unless data_store.keys.length < 1
+				tmax = 0 # true maximum
+				critical_dev = '' # the developer who has the tmax
+				data_store.keys.each do |login|
+					old_tmax = tmax
+					tmax = [data_store[login][:max],old_tmax].max
+					if old_tmax < tmax
+						critical_dev = login
+					end
 				end
-			end
 
-			100.times do |percent|
-				# get shipping probability
-				hour = data_store[critical_dev][:sample_futures].percentile(percent)
-				result << [hour, percent]
+				100.times do |percent|
+					# get shipping probability
+					hour = data_store[critical_dev][:sample_futures].percentile(percent)
+					result << [hour, percent]
+				end
+				puts result.to_s
 			end
-			puts result.to_s
 			result
 		end
 
@@ -176,58 +210,6 @@ class WelcomeController < ApplicationController
 			end
 			result
 		end
-
-
-		# UNUSED
-		def get_google_boxplot(data_store)
-			# first series is minimum values
-			# second series is 25%
-			# 3rd is 75%
-			# 4th is Maximum value
-			# 5th is Median line
-			# 6th is Outlier Data 1
-			# 7th is Outlier Data 2
-			# More Outlier Data can be added if needed
-
-			# for each collab populate the info
-			collabs = ''
-			collabs_data = ''
-			logins = []
-
-
-			# -1,u1,u2,-1
-
-			
-			[[:percentile ,10],
-			 [:percentile, 25],
-			 [:percentile, 75],
-			 [:percentile, 90],
-			 [:percentile, 50],
-			 [:min, nil],
-			 [:max, nil]
-			].each do |function, value|
-
-				# Create a row
-				row_data = [-1]
-				data_store.keys.each do |login|
-					sfs = data_store[login][:sample_futures]
-					row_data << sfs.send(function, value)
-				end
-				row_data << -1
-				collabs_data += row_data.to_s[1...-1].delete(' ') + '|'
-				collabs = data_store.keys.to_s[1...-1].gsub(', ', '|')
-			end
-
-			collabs = collabs[0...-1].delete('"')
-			collabs_data =  collabs_data[0...-1]
-			l = data_store.keys.length.to_s
-			devs = collabs.delete('"').gsub('|', ',+')
-
-			url = "https://chart.googleapis.com/chart?chs=600x338&cht=ls&chd=t0:#{collabs_data}&chm=F,FF9900,0,1:#{l},40|H,0CBF0B,0,1:#{l},1:20|H,000000,4,1:#{l},1:40|H,0000FF,3,1:#{l},1:20|o,FF0000,5,-1,7|o,FF0000,6,-1,7&chxt=y,x&chdl=Min/Max|90th+Percentile|25th+to+75th+Percentile|Median|10th+Percentile&chco=FF0000,0000FF,FF9900,000000,0CBF0B&chl=#{collabs}&chtt=Hours+Till+Completion+By+Developer|#{devs}&chg=5,5"
-			url
-		end
-
-		
 
 		def update_past_velocities
 			pv = get_velocity_history
@@ -340,23 +322,6 @@ class WelcomeController < ApplicationController
 			string.to_i.to_s == string
 		end
 end
-
-
-# Google Charts Info
-
-#https://chart.googleapis.com/chart?chs=400x225&cht=ls&chd=t0:-1,5,5,10,7,12,-1|-1,25,25,30,27,24,-1|-1,40,40,45,47,39,-1|-1,55,55,63,59,80,-1|-1,30,30,40,35,30,-1|-1,-1,-1,-1,-1,-1,-1|-1,-1,-1,-1,-1,-1,-1&chm=F,FF9900,0,1:5,40|H,0CBF0B,0,1:5,1:20|H,000000,4,1:5,1:40|H,0000FF,3,1:5,1:20|o,FF0000,5,-1,7|o,FF0000,6,-1,7&chxt=y,x&chdl=Outliers|Max+Value|Candlestick|Median|Min+Value&chco=FF0000,0000FF,FF9900,000000,0CBF0B&chl=fuck1|fuck2|fuck3|fuck4|fuck5
-
-
-# all series bounded by -1
-# first series is minimum values
-# second series is 25%
-# 3rd is 75%
-# 4th is Maximum value
-# 5th is Median line
-# 6th is Outlier Data 1
-# 7th is Outlier Data 2
-# More Outlier Data can be added if needed
-
 
 # https://developers.google.com/chart/interactive/docs/gallery/intervals
 # The new box plot

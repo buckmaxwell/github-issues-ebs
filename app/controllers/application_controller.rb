@@ -16,6 +16,10 @@ class ApplicationController < ActionController::Base
 		@selected_repository = session[:selected_repository]
 	end
 
+	def selected_priority
+		@selected_priority = session[:selected_priority]
+	end
+
 	def authorize
     	redirect_to '/signin' unless current_user
   	end
