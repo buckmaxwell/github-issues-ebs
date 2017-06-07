@@ -59,6 +59,9 @@ class WelcomeController < ApplicationController
 		#puts @repos
 	end
 
+	def about
+	end
+
 	def update_velocities
 		# Do this asynchronously
 		puts 'asynchronously updating past velocities...'

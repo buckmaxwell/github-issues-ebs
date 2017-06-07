@@ -14,6 +14,17 @@
 		<%= submit_tag("Display Estimates") %>
 	<% end %>
 
+	<h3>Quicklinks</h3>
+	<ul>
+		
+		<li><a href='/about'>How to Use This Site</a></li>
+		<li><a href="https://www.joelonsoftware.com/2007/10/26/evidence-based-scheduling/">Evidence Based Scheduling by Joel Spolsky</a></li>
+		<li><a href='/update_velocities'>Update Collaborator History - This probably shouldn't be in this list lol</a></li>
+
+
+	</ul>
+	
+
 
 	<h3>Milestones</h3>
 	<% if @milestones.length > 0 %>
@@ -192,7 +203,7 @@
 	<!-- Dev Info -->
 
 	
-	<h3>Developer Info</h3>
+	<h3>Estimate Histories from Collaborators</h3>
 	<% if @collabs.empty? %>
 		<i>No estimate history exists for the developers in this repository!</i>
 	<% end %>
@@ -232,7 +243,7 @@
 
 	<!-- End dev info -->
 
-	<p><a href='/update_velocities'>Update Collaborator History</a></p>
+	
 
 
 
