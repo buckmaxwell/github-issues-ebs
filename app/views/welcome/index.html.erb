@@ -41,7 +41,10 @@
 				      var options = {
 				      	title: 'Ready-to-Ship likelihood by hours from now',
 				        hAxis: {
-				          title: 'Hours From Now'
+				          title: 'Hours From Now',
+					      viewWindow: {
+					      	min: 0
+				           }
 				        },
 				        vAxis: {
 				          title: 'Percent Certainty'
@@ -138,7 +141,7 @@
 
 			      var options = {
 			          title:'Distribution of possible ship dates by developer',
-			          height: 800,
+			          height: 400,
 			          legend: {position: 'none'},
 			          hAxis: {
 			            gridlines: {color: '#fff'},
