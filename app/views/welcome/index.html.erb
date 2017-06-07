@@ -128,11 +128,15 @@
 		      }
 
 		      var options = {
-		          title:'Box Plot',
+		          title:'Distribution of possible ship dates by developer',
 		          height: 800,
 		          legend: {position: 'none'},
 		          hAxis: {
-		            gridlines: {color: '#fff'}
+		            gridlines: {color: '#fff'},
+		            title: 'Developers'
+		          },
+		          vAxis: {
+		          	title: 'Hours'
 		          },
 		          lineWidth: 0,
 		          series: [{'color': '#D3362D'}],
