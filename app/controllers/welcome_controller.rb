@@ -26,9 +26,9 @@ class WelcomeController < ApplicationController
 			['High or Urgent', 'urgent,high'],
 			['Important or higher', 'urgent,high,important'],
 			['Medium or higher', 'urgent,high,important,medium'],
-			['Moderate or greater', 'urgent,high,important,moderate'],
-			['Low or higher', 'urgent,high,important,moderate,low'],
-			['All features', 'urgent,high,important,moderate,low,none']
+			['Moderate or greater', 'urgent,high,important,medium,moderate'],
+			['Low or higher', 'urgent,high,important,medium,moderate,low'],
+			['All features', 'all']
 		]
 		@selected_priority = get_selected_priority
 		@boxplots = []
@@ -122,11 +122,18 @@ class WelcomeController < ApplicationController
 			# Imperfect - a request must be made between 1 and 7 times
 			issues = []
 			repo_name = milestone.url.split('/repos/')[1].split('/milestones')[0]
-			@selected_priority.split(',').each do |label|
-				#puts label
-				issues_for_label = Octokit.issues(repo_name, {:per_page => 100, :state => :open, :milestone => milestone.number, :assignee => '*', :labels => label })
+
+			if @selected_priority == 'all'
+				issues_for_label = Octokit.issues(repo_name, {:per_page => 100, :state => :open, :milestone => milestone.number, :assignee => '*'})
 				issues_for_label = paginate(issues_for_label, 100, 10000)
 				issues.concat issues_for_label
+			else
+				@selected_priority.split(',').each do |label|
+					#puts label
+					issues_for_label = Octokit.issues(repo_name, {:per_page => 100, :state => :open, :milestone => milestone.number, :assignee => '*', :labels => label })
+					issues_for_label = paginate(issues_for_label, 100, 10000)
+					issues.concat issues_for_label
+				end
 			end
 			
 
