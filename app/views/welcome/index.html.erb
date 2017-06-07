@@ -206,7 +206,7 @@
 	        var data = google.visualization.arrayToDataTable(<%= raw collab.get_history_chart_data %>);
 
 	        var options = {
-	          title: 'Erik Thiem',
+	          title: '<%= raw collab.login %>',
 	          hAxis: {minValue: 0, maxValue: 15, title:'Estimated Hours'},
 	          vAxis: {minValue: 0, maxValue: 15, title: 'Actual Hours'},
 	          trendlines: {
