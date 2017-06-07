@@ -49,6 +49,10 @@ gem "octokit", "~> 4.0"
 gem "rails-data-explorer"
 
 
+# Calculating quartiles
+gem 'descriptive_statistics'
+
+
 # END MY ADDED GEMS ######################################################
 
 

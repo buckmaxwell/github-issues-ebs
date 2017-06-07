@@ -11,13 +11,12 @@
 		<%= submit_tag("Display Estimates") %>
 	<% end %>
 
-	<% unless @selected_repo.nil? %>
-		<p><%= @selected_repo %></p>
+	<% @milestones.each_with_index do |milestone, i| %>
+		<h5><%=  @selected_repo + '/' %></h5><h3><%= milestone.title %></h3>
+		<img src=<%= @boxplots[i] %> alt=<%= milestone.title %> >
 	<% end %>
 
-	<% @milestones.each do |milestone| %>
-		<p><%= milestone.title %></p>
-	<% end %>
+	<p><a href='/update_velocities'>Update Collaborator History</a></p>
 
 
 

@@ -63,6 +63,7 @@ GEM
     color (1.8)
     concurrent-ruby (1.0.5)
     descriptive-statistics (2.2.0)
+    descriptive_statistics (2.5.1)
     distribution (0.7.3)
     dotenv (2.2.1)
     dotenv-rails (2.2.1)
@@ -215,6 +216,7 @@ DEPENDENCIES
   byebug
   capybara (~> 2.13)
   coffee-rails (~> 4.2)
+  descriptive_statistics
   dotenv-rails
   jbuilder (~> 2.5)
   listen (>= 3.0.5, < 3.2)

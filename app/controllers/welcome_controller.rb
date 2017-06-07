@@ -27,13 +27,23 @@ class WelcomeController < ApplicationController
 			end
 		end
 
-		update_past_velocities
+		#update_past_velocities
 
 		#ds = RailsDataExplorer::DataSet.new([0.5,0.9,1, 0.3, 0.3], 'Example Chart')
 		#@rde = RailsDataExplorer::Chart::BoxPlot.new(ds)
 
 		#@repos = @client.repos[3].inspect
 		#puts @repos
+	end
+
+	def update_velocities
+		# Do this asynchronously
+		puts 'asynchronously updating past velocities...'
+		Thread.new do
+			update_past_velocities
+			ActiveRecord::Base.connection.close 
+		end
+		redirect_to root_url, :notice => "Asynchronously updating past velocities..."
 	end
 
 	def choose_repos
@@ -73,13 +83,101 @@ class WelcomeController < ApplicationController
 
 		def get_box_and_whisker(milestone)
 			#puts milestone.rels[:lables]
+
+			data_store = {}
+			# {'buckmaxwell':{:sample_futures => [sf1,sf2,...,sf100],
+			#			  	  :max => 217, :min => 103
+			#  				 },
+			#  'erikthiem':{:sample_futures:[sf1,sf2,...,sf100], :max:217, :min:103},
+			# }
+
+			# Sample Future (sf1) example [6.7, 16, 3.3, 13.3, 32].sum => 71.3}
+			# 
+
 			repo_name = milestone.url.split('/repos/')[1].split('/milestones')[0]
 			issues = Octokit.issues(repo_name, {:per_page => 100, :state => :open, :milestone => milestone.number })
 			issues = paginate(issues, 100, 10000)
 
-			issues.each do |i|
-				puts i.title + i.assignee.login
+			# Populate Data Store
+			100.times do |x|
+				# Create a sample future for each collab
+				sfs = {} # => {'buckmaxwell': [], 'erikthiem': []} 
+				collab_name = ''
+				issues.each do |issue|
+					if sfs[issue.assignee.login].nil?
+						sfs[issue.assignee.login] = []
+					end
+					sfs[issue.assignee.login] << get_estimate(issue)
+				end
+
+				sfs.keys.each do |login|
+					if data_store[login].nil?
+						data_store[login] = {
+						 	:sample_futures => [],
+						 	:max => sfs[login].sum,
+						 	:min => sfs[login].sum
+						}
+					end
+					puts data_store
+					puts data_store[login][:sample_futures]
+					data_store[login][:sample_futures] << sfs[login].sum
+					data_store[login][:max] = [data_store[login][:max], sfs[login].sum ].max
+					data_store[login][:min] = [data_store[login][:min], sfs[login].sum ].min
+				end
 			end
+			url = get_google_boxplot(data_store)
+			puts url
+			url
+		end
+
+
+		def get_google_boxplot(data_store)
+			# first series is minimum values
+			# second series is 25%
+			# 3rd is 75%
+			# 4th is Maximum value
+			# 5th is Median line
+			# 6th is Outlier Data 1
+			# 7th is Outlier Data 2
+			# More Outlier Data can be added if needed
+
+			# for each collab populate the info
+			collabs = ''
+			collabs_data = ''
+			logins = []
+
+
+			# -1,u1,u2,-1
+
+			
+			[[:percentile ,10],
+			 [:percentile, 25],
+			 [:percentile, 75],
+			 [:percentile, 90],
+			 [:percentile, 50],
+			 [:min, nil],
+			 [:max, nil]
+			].each do |function, value|
+
+				# Create a row
+				row_data = [-1]
+				data_store.keys.each do |login|
+					sfs = data_store[login][:sample_futures]
+					row_data << sfs.send(function, value)
+				end
+				row_data << -1
+				collabs_data += row_data.to_s[1...-1].delete(' ') + '|'
+				collabs = data_store.keys.to_s[1...-1].gsub(', ', '|')
+			end
+
+			collabs = collabs[0...-1]
+			collabs_data =  collabs_data[0...-1]
+			l = data_store.keys.length.to_s
+			devs = collabs.delete('"').gsub('|', ',+')
+			puts devs
+
+			url = "https://chart.googleapis.com/chart?chs=600x338&cht=ls&chd=t0:#{collabs_data}&chm=F,FF9900,0,1:#{l},40|H,0CBF0B,0,1:#{l},1:20|H,000000,4,1:#{l},1:40|H,0000FF,3,1:#{l},1:20|o,FF0000,5,-1,7|o,FF0000,6,-1,7&chxt=y,x&chdl=Min/Max|90th+Percentile|25th+to+75th+Percentile|Median|10th+Percentile&chco=FF0000,0000FF,FF9900,000000,0CBF0B&chl=#{collabs}&chtt=Hours+Till+Completion+By+Developer|#{devs}"
+			url
 		end
 
 		
@@ -154,13 +252,26 @@ class WelcomeController < ApplicationController
 			result = page1_result
 			continue = result.length == per_page
 			while result.length < max and continue
-				puts 'requing'
 				#new_data = @client.last_response.rels[:next].get.data
 				new_data = Octokit.get Octokit.last_response.rels[:next].href
 				result.concat new_data
 				continue = new_data.length == per_page
 			end
 			result
+		end
+
+
+		def get_estimate(issue)
+			unless issue.body.blank? or issue.assignee.nil?
+				collab = Collaborator.find_by_login(issue.assignee.login)
+				body = issue.body.downcase
+				initial_est = body.split('@estimate:')[-1].split('h')[0] #=> "1" or "20" or "adad sdfs  d"
+				if is_numeric? initial_est
+					initial_est.to_f / collab.random_velocity
+				end
+			else
+				nil
+			end
 		end
 
 		def get_velocity(issue)
