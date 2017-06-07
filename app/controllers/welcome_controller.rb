@@ -5,9 +5,6 @@ class WelcomeController < ApplicationController
 
 	def index
 
-		# Temporarily commented out
-		#@velocity_history = get_velocity_history
-
 		Octokit.configure do |c|
 			c.access_token = access_token
 		end
@@ -17,9 +14,7 @@ class WelcomeController < ApplicationController
 		)
 		@repos = get_repos
 		@selected_repo = get_selected_repo
-
 		@milestones = get_milestones(@selected_repo)
-
 
 		@priority_labels = [
 			['Urgent only', 'urgent'],
@@ -44,6 +39,17 @@ class WelcomeController < ApplicationController
 			end
 		end
 
+		collab_logins = []
+		@data_stores.each do |ds|
+			collab_logins.concat ds.keys
+		end
+		collab_logins = collab_logins.to_set.to_a
+		@collabs = []
+		collab_logins.each do |login|
+			c = Collaborator.find_by_login(login)
+			@collabs << c unless c.nil?
+		end
+
 		#update_past_velocities
 
 		#ds = RailsDataExplorer::DataSet.new([0.5,0.9,1, 0.3, 0.3], 'Example Chart')
@@ -56,10 +62,10 @@ class WelcomeController < ApplicationController
 	def update_velocities
 		# Do this asynchronously
 		puts 'asynchronously updating past velocities...'
-		Thread.new do
-			update_past_velocities
-			ActiveRecord::Base.connection.close 
-		end
+		#Thread.new do
+		update_past_velocities
+		#ActiveRecord::Base.connection.close 
+		#end
 		redirect_to root_url, :notice => "Asynchronously updating past velocities..."
 	end
 
@@ -219,35 +225,41 @@ class WelcomeController < ApplicationController
 		end
 
 		def update_past_velocities
-			pv = get_velocity_history
+			pv,t = get_velocity_history_and_history_tuples
 			pv.keys.each do |login|
 				collab = Collaborator.find_by_login(login)
 				history = pv[login]
+				tuple_history = t[login]
 				if collab.nil?
-					collab = Collaborator.new(:login => login, :history => history)
+					collab = Collaborator.new(:login => login, :history => history, :tuple_history => tuple_history)
 				else
 					collab.history = history
+					collab.tuple_history = tuple_history
 				end
 				collab.save
 			end
 		end
 
-		def get_velocity_history
-			result = get_past_velocities
+		def get_velocity_history_and_history_tuples
+			# result1 = velocity lists with users as keys
+			# result2 = [estimate,actual] tuple lists with users as keys
+			result1, result2 = get_past_velocities_and_history_tuples
 
 			# We assume the worst about the users prediction ability until they
 			# prove otherwise
-			result.keys.each do |login|
-				if result[login].length < 6
-					result[login] = [0.5, 1.7, 0.2, 1.2, 0.9, 13.0]
+			result1.keys.each do |login|
+				if result1[login].length < 6
+					result1[login] = [0.5, 2, 0.2, 1.2, 0.9, 13.0]
+					result2[login] = [[1,2], [4,2], [25,5], [1.2,1], [9,10], [26,2]]
 				end
 			end
 			
-			result
+			[result1, result2]
 		end
 
-		def get_past_velocities
-			result = {}
+		def get_past_velocities_and_history_tuples
+			result1 = {} # velocity lists with users as keys
+			result2 = {} # [estimate,actual] tuple lists with users as keys
 			
 			# Get Past Velocities
 			
@@ -272,15 +284,18 @@ class WelcomeController < ApplicationController
 			issues.each do |issue|
 				unless issue.assignee.nil?
 					v = get_velocity(issue)
-					unless v.nil?
-						if result[issue.assignee.login].nil?
-							result[issue.assignee.login] = []
+					t = get_estimate_and_actual(issue) # tuple of estimate and actual
+					unless v.nil? or t.nil?
+						if result1[issue.assignee.login].nil? and result2[issue.assignee.login].nil?
+							result1[issue.assignee.login] = []
+							result2[issue.assignee.login] = []
 						end
-						result[issue.assignee.login] << v
+						result1[issue.assignee.login] << v
+						result2[issue.assignee.login] << t
 					end
 				end
 			end
-			result
+			[result1, result2]
 		end
 
 		def paginate(page1_result, per_page, max)
@@ -303,6 +318,24 @@ class WelcomeController < ApplicationController
 				initial_est = body.split('@estimate:')[-1].split('h')[0] #=> "1" or "20" or "adad sdfs  d"
 				if is_numeric? initial_est
 					initial_est.to_f / collab.random_velocity
+				end
+			else
+				nil
+			end
+		end
+
+		def get_estimate_and_actual(issue)
+			unless issue.body.blank?
+				body = issue.body.downcase
+				est = body.split('@estimate:')[-1].split('h')[0] #=> "1" or "20" or "adad sdfs  d"
+				act = body.split('@actual:')[-1].split('h')[0] #=> "1" or "20" or "adad sdfs  d"
+				puts 'here'
+				puts est 
+				puts act
+				if is_numeric? est and is_numeric? act
+					[est.to_f, act.to_f]
+				else
+					nil
 				end
 			else
 				nil

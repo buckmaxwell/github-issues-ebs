@@ -15,9 +15,10 @@
 	<% end %>
 
 
+	<h3>Milestones</h3>
 	<% if @milestones.length > 0 %>
 	<% @milestones.each_with_index do |milestone, i| %>
-		<h5><%=  @selected_repo + '/' %></h5><h3><%= milestone.title %></h3>
+		<h4><%= "- #{milestone.title}" %></h4>
 
 		<% if @data_stores[i].empty? %>
 
@@ -180,10 +181,56 @@
 			</script>
 		<% end %>
 
+		
+
+
 	<% end %>
 	<% else %>
-	<p>There are no milestones for this issue</p>
+		<i>There are no milestones for this issue</i>
 	<% end %>
+
+	<!-- Dev Info -->
+
+	
+	<h3>Developer Info</h3>
+	<% if @collabs.empty? %>
+		<i>No estimate history exists for the developers in this repository!</i>
+	<% end %>
+
+	<% @collabs.each do |collab| %>
+		<div id=<%= "estimates_#{collab.login}" %> style="height: 350px; width: 800px"></div>
+		<script>
+		  google.charts.load('current', {'packages':['corechart']});
+	      google.charts.setOnLoadCallback(drawChart);
+	      function drawChart() {
+	        var data = google.visualization.arrayToDataTable(<%= raw collab.get_history_chart_data %>);
+
+	        var options = {
+	          title: 'Erik Thiem',
+	          hAxis: {minValue: 0, maxValue: 15, title:'Estimated Hours'},
+	          vAxis: {minValue: 0, maxValue: 15, title: 'Actual Hours'},
+	          trendlines: {
+	            0: {
+	              type: 'linear',
+	            },
+	            1: {
+	              type: 'linear',
+	              pointsVisible: false
+	            }
+	          },
+	          series: {1: {pointsVisible: false}},
+	          legend: { position: 'none' }
+	        };
+
+	        var chartLinear = new google.visualization.ScatterChart(document.getElementById('<%= "estimates_#{collab.login}" %>'));
+	        chartLinear.draw(data, options);
+
+	        
+	      }
+		</script>
+	<% end %>
+
+	<!-- End dev info -->
 
 	<p><a href='/update_velocities'>Update Collaborator History</a></p>
 

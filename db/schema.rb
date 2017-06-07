@@ -10,13 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170606165806) do
+ActiveRecord::Schema.define(version: 20170607215519) do
 
   create_table "collaborators", force: :cascade do |t|
     t.text "login"
     t.text "history"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "tuple_history"
   end
 
   create_table "users", force: :cascade do |t|
