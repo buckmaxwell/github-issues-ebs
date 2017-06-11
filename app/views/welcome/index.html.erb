@@ -229,7 +229,7 @@
 	              pointsVisible: false
 	            }
 	          },
-	          series: {1: {pointsVisible: false}},
+	          series: {1: {pointsVisible: false, visibleInLegend: false}},
 	          legend: { position: 'none' }
 	        };
 
@@ -240,6 +240,43 @@
 	      }
 		</script>
 	<% end %>
+
+	<div id=<%= "estimates_all_devs" %> style="height: 350px; width: 800px"></div>
+	<script>
+	  google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(drawChart);
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable(<%= raw @combined_collab_history_chart %>);
+
+        var options = {
+          title: 'Collaborator Estimate Histories',
+          hAxis: {minValue: 0, maxValue: 15, title:'Estimated Hours'},
+          vAxis: {minValue: 0, maxValue: 15, title: 'Actual Hours'},
+          trendlines: {
+            0: {
+              type: 'linear',
+              pointsVisible: false
+            },
+            <% @collabs.length.times do |i| %>
+            	<% if @collabs.length-1 == i %>
+            		<%= i+1%>:{type: 'linear'}
+            	<% else %>
+            		<%= i+1%>:{type: 'linear'},
+            	<% end %>
+
+            <% end %>
+
+          },
+          series: {0: {pointsVisible: false, visibleInLegend: false}},
+          legend: { position: 'bottom' }
+        };
+
+        var chartLinear = new google.visualization.ScatterChart(document.getElementById('<%= "estimates_all_devs" %>'));
+        chartLinear.draw(data, options);
+
+        
+      }
+	</script>
 
 	<!-- End dev info -->
 

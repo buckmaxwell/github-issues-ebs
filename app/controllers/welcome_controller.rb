@@ -50,6 +50,8 @@ class WelcomeController < ApplicationController
 			@collabs << c unless c.nil?
 		end
 
+		@combined_collab_history_chart = get_combined_collab_history_chart(@collabs)
+
 		#update_past_velocities
 
 		#ds = RailsDataExplorer::DataSet.new([0.5,0.9,1, 0.3, 0.3], 'Example Chart')
@@ -57,6 +59,32 @@ class WelcomeController < ApplicationController
 
 		#@repos = @client.repos[3].inspect
 		#puts @repos
+	end
+
+	def get_combined_collab_history_chart(collabs)
+		result = [['Estimate', 'Perfect']] #=> [['Estimate', 'Perfect', 'CollabName1', 'CollabName2', etc.], [.....]]
+
+		# Add name row
+		collabs.each_with_index do |collab, i|
+			result[0][i+2] = collab.login
+		end
+
+		# Add data one collab at a time
+		collabs.each_with_index do |collab, i|
+			hist = collab.get_history_chart_data
+			hist.each_with_index do |row, x|
+				next if x == 0 # skip header row
+				est, act, perfect = row
+				result_row = []
+				result_row[0] = est
+				result_row[1] = perfect
+				result_row[collabs.length + 1] = nil
+				result_row[i+2] = act # must be last row - do not switch order
+
+				result << result_row
+			end
+		end
+		JSON.generate(result) # turn into javascript
 	end
 
 	def about
