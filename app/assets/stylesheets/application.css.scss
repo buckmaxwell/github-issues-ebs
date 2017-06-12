@@ -42,7 +42,9 @@ body {
 	height: 100%;
 }
 
-
+.hover {
+	text-decoration: underline dotted;
+}
 .hover:hover {
 	color:#DF691A;
 }

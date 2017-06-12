@@ -36,7 +36,7 @@
 				<span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
 				Update Collaborator History
 			</a>
-			<a href="#" rel="tooltip" title="Updating collaborator estimation history is time consuming and resource intensive so we only do it when you ask."><span class="glyphicon glyphicon-flash" aria-hidden="true"></span></a>
+			<a href="#" rel="tooltip" title="Updating collaborator estimation history is time consuming and resource intensive so we only do it when you ask."><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></a>
 			
 		</div>
 	</div>
@@ -52,7 +52,7 @@
 		<% if @data_stores[i].empty? %>
 
 			<i>No developer information for milestone - you should assign developers to your issues.</i>
-			<a href="#" rel="tooltip" title="If you assigned a developer and they aren't showing up, first make sure they have placed an estimate on the issue.  If that doesn't do it, click update collaborator history."><span class="glyphicon glyphicon-flash" aria-hidden="true"></span></a>
+			<a href="#" rel="tooltip" title="If you assigned a developer and they aren't showing up, first make sure they have placed an estimate on the issue.  If that doesn't do it, click update collaborator history."><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></a>
 			
 
 
@@ -62,9 +62,11 @@
 			<div class="row">
 				<div class="col-lg-6">
 					
-					<label class="hover" type="button" data-toggle="modal" data-target=<%= "#line_chart_modal#{i.to_s}" %> >Ready-to-Ship likelihood by hours from now</label>
+					<label class="hover" type="button" data-toggle="modal" data-target=<%= "#line_chart_modal#{i.to_s}" %> >Ready-to-Ship likelihood by hours from now </a></label>
 
-					<a href="#" rel="tooltip" title="The steeper the curve, the more confident you are that the ship date is real."><span class="glyphicon glyphicon-flash" aria-hidden="true"></span></a>
+					
+					<a href="#" rel="tooltip" title="The steeper the curve, the more confident you are that the ship date is real."><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></a>
+					
 
 					<div id=<%= "chart_div#{i.to_s}" %> class="chart" ></div>
 				</div>
@@ -124,7 +126,7 @@
 			<!-- Box and Whisker -->
 			<div class="col-lg-6">
 				<label class="hover" type="button" data-toggle="modal" data-target=<%= "#box_plot_modal#{i.to_s}" %> >Distribution of possible ship dates by developer</label>
-				<a href="#" rel="tooltip" title="Some developers may be causing problems because their ship dates are so uncertain: they need to work on learning to estimate better. Other developers have very precise ship dates that are just too late: they need to have some of their work taken off their plate."><span class="glyphicon glyphicon-flash" aria-hidden="true"></span></a>
+				<a href="#" rel="tooltip" title="Some developers may be causing problems because their ship dates are so uncertain: they need to work on learning to estimate better. Other developers have very precise ship dates that are just too late: they need to have some of their work taken off their plate."><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></a>
 
 				<div id=<%= "box_plot#{i.to_s}" %> class="chart"></div>
 
@@ -269,7 +271,7 @@
 	<% end %>
 	<% else %>
 		<i>There are no milestones for this repository</i>
-		<a href="#" rel="tooltip" title="Not working how you thought? Click on 'How to Use This Site'"><span class="glyphicon glyphicon-flash" aria-hidden="true"></span></a>
+		<a href="#" rel="tooltip" title="Not working how you thought? Click on 'How to Use This Site'"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></a>
 	<% end %>
 
 	<!-- Dev Info -->
@@ -285,7 +287,7 @@
 	<div class="row">
 		<div class="col-lg-12">
 			<label class="hover" type="button" data-toggle="modal" data-target=<%= "#estimates_all_devs_modal" %> >Team Estimate History</label>
-			<a href="#" rel="tooltip" title="Developers with trend lines above the purple 'Perfect Estimator' tend to underestimate."><span class="glyphicon glyphicon-flash" aria-hidden="true"></span></a>
+			<a href="#" rel="tooltip" title="Developers with trend lines above the purple 'Perfect Estimator' tend to underestimate."><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></a>
 			<div id=<%= "estimates_all_devs" %> class="chart"></div>
 
 			<%= render "modal", {modal_id: "estimates_all_devs_modal", title:"Team Estimate History", chart_id:"estimates_all_devs_modal_div"}%>
