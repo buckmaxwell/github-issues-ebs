@@ -287,7 +287,7 @@
 	<div class="row">
 		<div class="col-lg-12">
 			<label class="hover" type="button" data-toggle="modal" data-target=<%= "#estimates_all_devs_modal" %> >Team Estimate History</label>
-			<a href="#" rel="tooltip" title="Developers with trend lines above the purple 'Perfect Estimator' tend to underestimate."><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></a>
+			<a href="#" rel="tooltip" title="Developers with trend lines above the translucent orange 'Perfect Estimator' tend to underestimate."><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></a>
 			<div id=<%= "estimates_all_devs" %> class="chart"></div>
 
 			<%= render "modal", {modal_id: "estimates_all_devs_modal", title:"Team Estimate History", chart_id:"estimates_all_devs_modal_div"}%>
@@ -320,17 +320,24 @@
 	        var options = {
 	          hAxis: {minValue: 0, maxValue: 15, title:'Estimated Hours'},
 	          vAxis: {minValue: 0, maxValue: 15, title: 'Actual Hours'},
+	          <% the_color = @colors.sample %>
 	          trendlines: {
 	            0: {
 	              type: 'linear',
+	              color: '<%= the_color %>'
 	            },
 	            1: {
 	              type: 'linear',
-	              color: '#990099',
+	              color: '#DF691A',
+	              opacity: 0.5,
 	              pointsVisible: false
 	            }
 	          },
-	          series: {1: {pointsVisible: false, visibleInLegend: false}},
+	          series: {
+	          	0: {color: '<%= the_color %>'},
+	          	1: {pointsVisible: false, visibleInLegend: false},
+
+	          },
 	          legend: { position: 'none' }
 	        };
 
@@ -369,20 +376,49 @@
           trendlines: {
             0: {
               type: 'linear',
-              color: '#990099',
+              color: '#DF691A',
+              opacity: 0.2,
               pointsVisible: false
+
             },
             <% @collabs.length.times do |i| %>
-            	<% if @collabs.length-1 == i %>
-            		<%= i+1%>:{type: 'linear'}
-            	<% else %>
-            		<%= i+1%>:{type: 'linear'},
+            	<% if @colors[i] %>
+	            	<% if @collabs.length-1 == i %>
+	            		<%= i+1%>:{type: 'linear', color: '<%= @colors[i] %>'}
+	            	<% else %>
+	            		<%= i+1%>:{type: 'linear', color: '<%= @colors[i] %>'},
+	            	<% end %>
+	            <% else %>
+	            	<% if @collabs.length-1 == i %>
+	            		<%= i+1%>:{type: 'linear'}
+	            	<% else %>
+	            		<%= i+1%>:{type: 'linear'},
+	            	<% end %>
             	<% end %>
-
             <% end %>
 
           },
-          series: {0: {pointsVisible: false, visibleInLegend: false}},
+          series: {
+          	0: {pointsVisible: false, visibleInLegend: false
+          	},
+            <% @collabs.length.times do |i| %>
+
+            	<% if @colors[i] %>
+	            	<% if @collabs.length-1 == i %>
+	            		<%= i+1%>:{color: '<%= @colors[i] %>'}
+	            	<% else %>
+	            		<%= i+1%>:{color: '<%= @colors[i] %>'},
+	            	<% end %>
+	            <% else %>
+	            	<% if @collabs.length-1 == i %>
+	            		<%= i+1%>:{type: 'linear'}
+	            	<% else %>
+	            		<%= i+1%>:{type: 'linear'},
+	            	<% end %>
+            	<% end %>
+
+            <% end %>
+          },
           legend: { position: 'bottom' }
         };
 
@@ -416,13 +452,24 @@
 	<h1>Sign In With GitHub</h1>
 	
 <% end %>
+
+<footer class="footer" style="height:60px; width:100%; margin-top:30px;">
+  <div class="container" style="text-align:center;">
+    <a>&#169; Sheepo - 2017</a>
+  </div>
+</footer>
+
 </div>
+
 
 <script type="text/javascript">
     $(function () {
         $("[rel='tooltip']").tooltip({placement: "right"});
     });
 </script>
+
+
+
 
 
 

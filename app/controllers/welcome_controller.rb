@@ -6,6 +6,30 @@ class WelcomeController < ApplicationController
 	def index
 
 
+		# 16 colors for using in graphs
+		@colors = [
+			'#85144b', # maroon
+			'#F012BE', # fusia
+			'#B10DC9', # purple
+			
+			'#7FDBFF', # aqua
+			'#39CCCC', # teal
+			'#001f3f', # navy
+			
+			'#01FF70', # lime
+			'#3D9970', # olive
+			
+			'#FF851B', # orange
+			
+			'#0074D9', # blue
+			'#FFDC00', # yellow
+			'#2ECC40', # green
+			'#FF4136', # red
+
+			'#111111', # black
+			
+		].shuffle
+
 		Octokit.configure do |c|
 			c.access_token = access_token
 		end
