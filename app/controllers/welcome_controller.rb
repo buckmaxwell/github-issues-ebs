@@ -184,10 +184,6 @@ class WelcomeController < ApplicationController
 						sfs[issue.assignee.login] = []
 					end
 
-					if Collaborator.find_by_login(issue.assignee.login).nil?
-						update_past_velocities
-					end
-
 					issue_est = get_estimate(issue)
 					if issue_est.nil?
 						@warnings = "Some issues associated with milestones are missing assignees or estimates - this will probably affect your timelines"
@@ -351,7 +347,7 @@ class WelcomeController < ApplicationController
 
 
 		def get_estimate(issue)
-			unless issue.body.blank? or issue.assignee.nil?
+			unless issue.body.blank? or issue.assignee.nil? or Collaborator.find_by_login(issue.assignee.login).nil?
 				collab = Collaborator.find_by_login(issue.assignee.login)
 				body = issue.body.downcase
 				initial_est = body.split('@estimate:')[-1].split('h')[0] #=> "1" or "20" or "adad sdfs  d"
