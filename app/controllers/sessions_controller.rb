@@ -1,5 +1,6 @@
 class SessionsController < ApplicationController
-	def create     
+	def create
+
 		auth = request.env["omniauth.auth"]
 		#puts 'YO'
 		#puts auth.credentials.token
@@ -28,6 +29,10 @@ class SessionsController < ApplicationController
   	def destroy
     	session[:user_id] = nil
     	redirect_to root_url, :notice => "Signed out!"
+  	end
+
+  	def failure
+  		@message = params[:message]
   	end
 
 end

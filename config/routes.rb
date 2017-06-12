@@ -4,6 +4,8 @@ Rails.application.routes.draw do
   root "welcome#index"
 
   get "/auth/:provider/callback" => "sessions#create"
+  get "/auth/failure" => "sessions#failure"
+
   get "/update_velocities" => 'welcome#update_velocities'
   get "/about" => 'welcome#about'
   post '/choose_repo' => "sessions#choose_repo"
