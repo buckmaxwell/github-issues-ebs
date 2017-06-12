@@ -42,7 +42,11 @@
 
 		<% if @data_stores[i].empty? %>
 
-			<i>No developer information for milestone - you should assign developers to your issues and have them put estimates in the issue body.</i>
+			<i>No developer information for milestone - you should assign developers to your issues.</i>
+			<a href="#" rel="tooltip" title="If you assigned a developer and they aren't showing up, make sure they have placed an estimate on the issue"><span class="glyphicon glyphicon-flash" aria-hidden="true"></span></a>
+			
+
+
 
 		<% else %>
 			<!-- Line Chart --> 
@@ -82,6 +86,8 @@
 				        vAxis: {
 				          title: 'Percent Certainty'
 				        }
+
+
 				      };
 
 				      var chart = new google.visualization.LineChart(document.getElementById('<%= "chart_div#{i.to_s}" %>'));
@@ -253,15 +259,20 @@
 
 	<% end %>
 	<% else %>
-		<i>There are no milestones for this issue</i>
+		<i>There are no milestones for this repository</i>
+		<a href="#" rel="tooltip" title="Not working how you thought? Click on 'How to Use This Site'"><span class="glyphicon glyphicon-flash" aria-hidden="true"></span></a>
 	<% end %>
 
 	<!-- Dev Info -->
 
+	<% unless @milestones.length == 0 or @collabs.empty? %>
 
 	<br>
 	<h3 id="team-estimate-history">Team Estimate History</h3>
 	<hr>
+	<% if @collabs.empty? %>
+		<i>No estimate history exists for the developers in this repository</i>
+	<% else %>
 	<div class="row">
 		<div class="col-lg-12">
 			<label class="hover" type="button" data-toggle="modal" data-target=<%= "#estimates_all_devs_modal" %> >Team Estimate History</label>
@@ -272,11 +283,12 @@
 
 		</div>
 	</div>
+	<% end %>
 	
 	<h3 id="individual-estimate-history">Collaborators</h3>
 	<hr>
 	<% if @collabs.empty? %>
-		<i>No estimate history exists for the developers in this repository!</i>
+		<i>No estimate history exists for the developers in this repository</i>
 	<% end %>
 
 	<div class="row">
@@ -303,6 +315,7 @@
 	            },
 	            1: {
 	              type: 'linear',
+	              color: '#990099',
 	              pointsVisible: false
 	            }
 	          },
@@ -384,22 +397,8 @@
 	<!-- End dev info -->
 
 	<!-- Activate tooltips -->
-	<script type="text/javascript">
-    $(function () {
-        $("[rel='tooltip']").tooltip({placement: "right"});
-    });
-	</script>
-
-
-
-
-
 	
-
-
-
-
-
+	<% end %>
 
 
 <% else %>
@@ -407,6 +406,12 @@
 	
 <% end %>
 </div>
+
+<script type="text/javascript">
+    $(function () {
+        $("[rel='tooltip']").tooltip({placement: "right"});
+    });
+</script>
 
 
 
