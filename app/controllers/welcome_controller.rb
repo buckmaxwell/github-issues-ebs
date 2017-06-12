@@ -53,7 +53,10 @@ class WelcomeController < ApplicationController
 
 		@combined_collab_history_chart = get_combined_collab_history_chart(@collabs)
 
-		#update_past_velocities
+		Thread.new do
+			update_past_velocities
+			ActiveRecord::Base.connection.close
+		end
 
 		#ds = RailsDataExplorer::DataSet.new([0.5,0.9,1, 0.3, 0.3], 'Example Chart')
 		#@rde = RailsDataExplorer::Chart::BoxPlot.new(ds)
