@@ -53,10 +53,6 @@ class WelcomeController < ApplicationController
 
 		@combined_collab_history_chart = get_combined_collab_history_chart(@collabs)
 
-		Thread.new do
-			update_past_velocities
-			ActiveRecord::Base.connection.close
-		end
 
 		#ds = RailsDataExplorer::DataSet.new([0.5,0.9,1, 0.3, 0.3], 'Example Chart')
 		#@rde = RailsDataExplorer::Chart::BoxPlot.new(ds)
@@ -186,6 +182,8 @@ class WelcomeController < ApplicationController
 				issues.each do |issue|
 					if sfs[issue.assignee.login].nil?
 						sfs[issue.assignee.login] = []
+					elsif Collaborator.find_by_login(issue.assignee.login).nil?
+						update_past_velocities
 					end
 					issue_est = get_estimate(issue)
 					if issue_est.nil?
