@@ -24,11 +24,11 @@
 
 	<div class="row">
 		<div class="col-lg-12">
-			<a href='/update_velocities' class="btn btn-primary">
+			<a href='/update_velocities' class="btn btn-info">
 				<span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
 				Update Collaborator History
 			</a>
-			<button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Open Modal</button>
+			
 		</div>
 	</div>
 	
@@ -48,13 +48,17 @@
 			<!-- Line Chart --> 
 			<div class="row">
 				<div class="col-lg-6">
-					<label>Ready-to-Ship likelihood by hours from now</label>
+					
+					<label class="hover" type="button" data-toggle="modal" data-target=<%= "#line_chart_modal#{i.to_s}" %> >Ready-to-Ship likelihood by hours from now</label>
 					<div id=<%= "chart_div#{i.to_s}" %> class="chart" ></div>
 				</div>
+
+				<%= render "modal", {modal_id: "line_chart_modal#{i.to_s}", title:"Ready-to-Ship likelihood by hours from now", chart_id:"line_chart_modal_div#{i.to_s}"}%>
 			
 			<script>
 				google.charts.load('current', {packages: ['corechart', 'line']});
 				google.charts.setOnLoadCallback(drawBasic);
+				
 
 				function drawBasic() {
 
@@ -65,6 +69,7 @@
 				      data.addRows(<%= raw @shipping_prob[i] %>);
 
 				      var options = {
+				      	legend: {position: 'none'},
 				        hAxis: {
 				          title: 'Hours From Now',
 					      viewWindow: {
@@ -78,15 +83,32 @@
 
 				      var chart = new google.visualization.LineChart(document.getElementById('<%= "chart_div#{i.to_s}" %>'));
 
+				      var modalChart = new google.visualization.LineChart(document.getElementById('<%= "line_chart_modal_div#{i.to_s}" %>'));
+
 				      chart.draw(data, options);
+				      //$('<%= "#line_chart_modal_div#{i.to_s}" %>').modal("show");
+				      modalChart.draw(data, options);
+				      //$('<%= "#line_chart_modal_div#{i.to_s}" %>').modal("hide");
 				    }
+
+				    //Redraw chart when modal opens
+				    $('<%= "#line_chart_modal#{i.to_s}" %>').on('shown.bs.modal', function (e) {
+				    	drawBasic();
+					})
+
+				    //Redraw chart when window resizes
+				    $(window).resize(function(){
+					  	drawBasic();
+					});
 			</script>
 
 
 			<!-- Box and Whisker -->
 			<div class="col-lg-6">
-				<label>Distribution of possible ship dates by developer</label>
+				<label class="hover" type="button" data-toggle="modal" data-target=<%= "#box_plot_modal#{i.to_s}" %> >Distribution of possible ship dates by developer</label>
 				<div id=<%= "box_plot#{i.to_s}" %> class="chart"></div>
+
+				<%= render "modal", {modal_id: "box_plot_modal#{i.to_s}", title:"Distribution of possible ship dates by developer", chart_id:"box_plot_modal_div#{i.to_s}"}%>
 			</div>
 			<script>
 			    google.charts.load('current', {'packages':['corechart']});
@@ -200,8 +222,21 @@
 
 			      var chart = new google.visualization.LineChart(document.getElementById('<%= "box_plot#{i.to_s}" %>'));
 
+			      var modalChart = new google.visualization.LineChart(document.getElementById('<%= "box_plot_modal_div#{i.to_s}" %>'));
+
 			      chart.draw(data, options);
+			      modalChart.draw(data, options);
 			    }
+
+			    //Redraw chart when modal opens
+			    $('<%= "#box_plot_modal#{i.to_s}" %>').on('shown.bs.modal', function (e) {
+			    	drawBoxPlot();
+				})
+
+			    //Redraw chart when window resizes
+			    $(window).resize(function(){
+				  	drawBoxPlot();
+				});
 
 
 			</script>
@@ -224,8 +259,11 @@
 	<hr>
 	<div class="row">
 		<div class="col-lg-12">
-			<label>Team Estimate History</label>
+			<label class="hover" type="button" data-toggle="modal" data-target=<%= "#estimates_all_devs_modal" %> >Team Estimate History</label>
 			<div id=<%= "estimates_all_devs" %> class="chart"></div>
+
+			<%= render "modal", {modal_id: "estimates_all_devs_modal", title:"Team Estimate History", chart_id:"estimates_all_devs_modal_div"}%>
+
 		</div>
 	</div>
 	
@@ -238,13 +276,16 @@
 	<div class="row">
 	<% @collabs.each do |collab| %>
 		<div class="col-lg-6">
-			<label><%= collab.login %></label>
+			<label class="hover" type="button" data-toggle="modal" data-target=<%= "#estimates_#{collab.login}_modal" %> ><%= collab.login %></label>
 			<div id=<%= "estimates_#{collab.login}" %> class="chart"></div>
+
+			<%= render "modal", {modal_id: "estimates_#{collab.login}_modal", title:"#{collab.login}", chart_id:"estimates_#{collab.login}_modal_div"}%>
+
 		</div>
 		<script>
 		  google.charts.load('current', {'packages':['corechart']});
-	      google.charts.setOnLoadCallback(drawChart);
-	      function drawChart() {
+	      google.charts.setOnLoadCallback(drawChart<%= raw collab.login%>);
+	      function drawChart<%= raw collab.login%>() {
 	        var data = google.visualization.arrayToDataTable(<%= raw collab.get_history_chart_data %>);
 
 	        var options = {
@@ -264,10 +305,23 @@
 	        };
 
 	        var chartLinear = new google.visualization.ScatterChart(document.getElementById('<%= "estimates_#{collab.login}" %>'));
-	        chartLinear.draw(data, options);
+	        var modalChartLinear = new google.visualization.ScatterChart(document.getElementById('<%= "estimates_#{collab.login}_modal_div" %>'));
 
-	        
+	        chartLinear.draw(data, options);
+	        modalChartLinear.draw(data, options);
+
 	      }
+
+	      //Redraw chart when modal opens
+		  $('<%= "#estimates_#{collab.login}_modal" %>').on('shown.bs.modal', function (e) {
+		  	drawChart<%= raw collab.login%>();
+		  }) 
+
+		  //Redraw chart when window resizes
+		  $(window).resize(function(){
+		  	drawChart<%= raw collab.login%>();
+		  });
+
 		</script>
 	<% end %>
 	</div>
@@ -302,10 +356,22 @@
         };
 
         var chartLinear = new google.visualization.ScatterChart(document.getElementById('<%= "estimates_all_devs" %>'));
-        chartLinear.draw(data, options);
 
-        
+        var modalChartLinear = new google.visualization.ScatterChart(document.getElementById('<%= "estimates_all_devs_modal_div" %>'));
+
+        chartLinear.draw(data, options);
+        modalChartLinear.draw(data, options);
       }
+
+      //Redraw chart when modal opens
+	  $('<%= "#estimates_all_devs_modal" %>').on('shown.bs.modal', function (e) {
+		drawChart();
+	  }) 
+
+	  //Redraw chart when window resizes
+	  $(window).resize(function(){
+	  	drawChart();
+	  });
 	</script>
 
 	<!-- End dev info -->
