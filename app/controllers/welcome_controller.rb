@@ -182,9 +182,12 @@ class WelcomeController < ApplicationController
 				issues.each do |issue|
 					if sfs[issue.assignee.login].nil?
 						sfs[issue.assignee.login] = []
-					elsif Collaborator.find_by_login(issue.assignee.login).nil?
+					end
+
+					if Collaborator.find_by_login(issue.assignee.login).nil?
 						update_past_velocities
 					end
+
 					issue_est = get_estimate(issue)
 					if issue_est.nil?
 						@warnings = "Some issues associated with milestones are missing assignees or estimates - this will probably affect your timelines"
