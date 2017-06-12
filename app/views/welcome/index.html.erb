@@ -50,6 +50,9 @@
 				<div class="col-lg-6">
 					
 					<label class="hover" type="button" data-toggle="modal" data-target=<%= "#line_chart_modal#{i.to_s}" %> >Ready-to-Ship likelihood by hours from now</label>
+
+					<a href="#" rel="tooltip" title="The steeper the curve, the more confident you are that the ship date is real."><span class="glyphicon glyphicon-flash" aria-hidden="true"></span></a>
+
 					<div id=<%= "chart_div#{i.to_s}" %> class="chart" ></div>
 				</div>
 
@@ -106,6 +109,8 @@
 			<!-- Box and Whisker -->
 			<div class="col-lg-6">
 				<label class="hover" type="button" data-toggle="modal" data-target=<%= "#box_plot_modal#{i.to_s}" %> >Distribution of possible ship dates by developer</label>
+				<a href="#" rel="tooltip" title="Some developers may be causing problems because their ship dates are so uncertain: they need to work on learning to estimate better. Other developers have very precise ship dates that are just too late: they need to have some of their work taken off their plate."><span class="glyphicon glyphicon-flash" aria-hidden="true"></span></a>
+
 				<div id=<%= "box_plot#{i.to_s}" %> class="chart"></div>
 
 				<%= render "modal", {modal_id: "box_plot_modal#{i.to_s}", title:"Distribution of possible ship dates by developer", chart_id:"box_plot_modal_div#{i.to_s}"}%>
@@ -260,6 +265,7 @@
 	<div class="row">
 		<div class="col-lg-12">
 			<label class="hover" type="button" data-toggle="modal" data-target=<%= "#estimates_all_devs_modal" %> >Team Estimate History</label>
+			<a href="#" rel="tooltip" title="Developers with trend lines above the purple 'Perfect Estimator' tend to underestimate."><span class="glyphicon glyphicon-flash" aria-hidden="true"></span></a>
 			<div id=<%= "estimates_all_devs" %> class="chart"></div>
 
 			<%= render "modal", {modal_id: "estimates_all_devs_modal", title:"Team Estimate History", chart_id:"estimates_all_devs_modal_div"}%>
@@ -339,6 +345,7 @@
           trendlines: {
             0: {
               type: 'linear',
+              color: '#990099',
               pointsVisible: false
             },
             <% @collabs.length.times do |i| %>
@@ -375,6 +382,14 @@
 	</script>
 
 	<!-- End dev info -->
+
+	<!-- Activate tooltips -->
+	<script type="text/javascript">
+    $(function () {
+        $("[rel='tooltip']").tooltip({placement: "right"});
+    });
+	</script>
+
 
 
 
