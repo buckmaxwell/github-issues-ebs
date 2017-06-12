@@ -53,6 +53,13 @@ gem "rails-data-explorer"
 gem 'descriptive_statistics'
 
 
+
+# For style and grace
+gem 'bootstrap-sass', '~> 3.3.6'
+gem 'bootswatch-rails'
+gem 'jquery-rails', '>= 3.0.0'
+
+
 # END MY ADDED GEMS ######################################################
 
 

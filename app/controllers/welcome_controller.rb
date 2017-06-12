@@ -5,6 +5,7 @@ class WelcomeController < ApplicationController
 
 	def index
 
+
 		Octokit.configure do |c|
 			c.access_token = access_token
 		end

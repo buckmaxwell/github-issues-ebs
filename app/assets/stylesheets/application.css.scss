@@ -1,0 +1,43 @@
+
+//Import bootstrap-sprockets
+@import "bootstrap-sprockets";
+
+// Import cerulean variables
+@import "bootswatch/superhero/variables";
+
+// Then bootstrap itself
+@import "bootstrap";
+
+// Bootstrap body padding for fixed navbar
+body { padding-top: 60px; }
+
+// And finally bootswatch style itself
+@import "bootswatch/superhero/bootswatch";
+
+// Whatever application styles you have go last
+//@import "base";
+
+.chart {
+  width: 100%; 
+  min-height: 450px;
+}
+
+.vertical-align {
+	position: absolute;
+	bottom:50%;
+	width:100%;
+	margin:  -100px 0 0 -100px;
+
+    
+}
+
+body {
+	top:0px;
+	bottom:0px;
+	position:absolute;
+	width:100%;
+}
+
+.container {
+	height: 100%;
+}
