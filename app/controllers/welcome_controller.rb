@@ -185,6 +185,9 @@ class WelcomeController < ApplicationController
 						sfs[issue.assignee.login] = []
 					end
 					issue_est = get_estimate(issue)
+					if issue_est.nil?
+						@warnings = "Some issues associated with milestones are missing assignees or estimates - this will probably affect your timelines"
+					end
 					sfs[issue.assignee.login] <<  issue_est unless issue_est.nil?
 					if sfs[issue.assignee.login].empty?
 						 sfs.delete(issue.assignee.login)
@@ -350,6 +353,8 @@ class WelcomeController < ApplicationController
 				initial_est = body.split('@estimate:')[-1].split('h')[0] #=> "1" or "20" or "adad sdfs  d"
 				if is_numeric? initial_est
 					initial_est.to_f / collab.random_velocity
+				else
+					nil
 				end
 			else
 				nil

@@ -5,6 +5,14 @@
 
 <% if current_user %>
 
+<% if @warnings %>
+<div class="alert alert-dismissible alert-danger">
+  <button type="button" class="close" data-dismiss="alert">&times;</button>
+  <h4>Warning!</h4>
+  <p><%= @warnings %></p>
+</div>
+<% end %>
+
 	<div class="row">
 
 		<%= form_tag("/choose_repo", method: "post") do %>
