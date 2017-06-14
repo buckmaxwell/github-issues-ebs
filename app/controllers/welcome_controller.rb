@@ -435,7 +435,11 @@ class WelcomeController < ApplicationController
 		end
 
 		def is_numeric?(string)
-			string.to_i.to_s == string
+			if string.include? '.'
+				string.to_f.to_s == string
+			else
+				string.to_i.to_s == string
+			end
 		end
 end
 
