@@ -307,10 +307,25 @@ class WelcomeController < ApplicationController
 			# We assume the worst about the users prediction ability until they
 			# prove otherwise
 			result1.keys.each do |login|
-				if result1[login].length < 6
-					result1[login] = [0.5, 2, 0.2, 1.2, 0.9, 13.0]
-					result2[login] = [[1,2], [4,2], [25,5], [1.2,1], [9,10], [26,2]]
+
+				# Create a starting history for the user -- with predictions 10 
+				# times over and under real life
+				default_hist = Array.new(15) {rand(0.1..1).round(1)}.concat Array.new(15) {rand(1..10)}
+				
+				# Delete random old items from the history to make way for the new
+				items_to_delete = result1[login].length < 30 ? result1[login].length : 30
+				items_to_delete.times {default_hist.delete_at(rand(default_hist.length))}
+				
+				# Add in the new history
+				result1[login].each do |velocity|
+					default_hist << velocity
 				end
+
+				# Set this history
+				result1[login] = default_hist
+
+				# DO NOT ADD IN FAKE (result2) tuple_histories
+
 			end
 			
 			[result1, result2]
