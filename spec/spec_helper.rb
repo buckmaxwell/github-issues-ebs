@@ -13,6 +13,7 @@
 # it.
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
+require 'webmock/rspec'
 require 'support/omni_auth_spec_helper'
 
 RSpec.configure do |config|

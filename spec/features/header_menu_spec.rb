@@ -4,9 +4,10 @@ RSpec.feature 'Display header menu links', type: :feature do
 
   context 'when the user is logged in' do
 
-    # TODO: setup before block so user is logged in
     before do
     	OmniAuthSpecHelper.valid_github_login_setup
+      stub_request(:get, 'https://api.github.com/user/repos?per_page=100&state=closed')
+        .to_return(status: 200, body: [], headers: {})
 		end
     
     specify 'the user is able to see only logged-in header menu links' do
