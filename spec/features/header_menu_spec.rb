@@ -5,9 +5,13 @@ RSpec.feature 'Display header menu links', type: :feature do
   context 'when the user is logged in' do
 
     # TODO: setup before block so user is logged in
+    before do
+    	OmniAuthSpecHelper.valid_github_login_setup
+		end
     
     specify 'the user is able to see only logged-in header menu links' do
       visit '/'
+      click_link "Let's Go"
 
       within '.navbar' do
         expect(page).to have_link('How To Use This Site')
@@ -16,7 +20,6 @@ RSpec.feature 'Display header menu links', type: :feature do
         expect(page).to have_link('Team Estimate History')
         expect(page).to have_link('Collaborators')
         expect(page).to have_text('Welcome')
-        expect(page).not_to have_link('Log In')
         expect(page).to have_link('Log Out')
       end
 
@@ -34,8 +37,6 @@ RSpec.feature 'Display header menu links', type: :feature do
         expect(page).not_to have_link('Team Estimate History')
         expect(page).not_to have_link('Collaborators')
         expect(page).not_to have_text('Welcome')
-        expect(page).to have_link('Log In')
-        expect(page).not_to have_link('Log Out')
       end
     end
   end
