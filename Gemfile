@@ -73,7 +73,7 @@ group :development, :test do
 
   # Testing suite
   gem 'rspec-rails', '~> 3.6'
-	gem 'webmock'
+  gem 'webmock'
 end
 
 group :development do
