@@ -25,3 +25,4 @@
 
 # Stops vim swap files from accidentally getting added
 *.swp
+*.swo
