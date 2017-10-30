@@ -1,39 +1,26 @@
 class SessionsController < ApplicationController
-	def create
+  def create
+    auth = request.env['omniauth.auth']
 
-		auth = request.env["omniauth.auth"]
-		#puts 'YO'
-		#puts auth.credentials.token
-		#puts 'YO'
+    user = User.find_by_provider_and_uid(auth['provider'], auth['uid']) || User.create_with_omniauth(auth)
+    session[:user_id] = user.id
+    session[:access_token] = auth.credentials.token
 
-		#client = Octokit::Client.new(:access_token => auth.credentials.token)
+    redirect_to root_url, notice: 'Signed in!'
+  end
 
-		#puts 'uhh'
-		#puts client.user.fields.to_a
-		#puts 'uhh'
+  def choose_repo
+    session[:selected_repository] = params[:repository]
+    session[:selected_priority] = params[:priority]
+    redirect_to root_url
+  end
 
+  def destroy
+    session[:user_id] = nil
+    redirect_to root_url, notice: 'Signed out!'
+  end
 
-		user = User.find_by_provider_and_uid(auth["provider"], auth["uid"]) || User.create_with_omniauth(auth)
-		session[:user_id] = user.id
-		session[:access_token] = auth.credentials.token
-
-		redirect_to root_url, :notice => "Signed in!"
-  	end
-
-  	def choose_repo
-  		session[:selected_repository] = params[:repository]
-  		session[:selected_priority] = params[:priority]
-  		redirect_to root_url
-  	end
-
-  	def destroy
-    	session[:user_id] = nil
-    	redirect_to root_url, :notice => "Signed out!"
-  	end
-
-  	def failure
-  		@message = params[:message]
-  	end
-
+  def failure
+    @message = params[:message]
+  end
 end
-
