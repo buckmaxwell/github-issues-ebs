@@ -22,3 +22,6 @@
 
 .byebug_history
 .env
+
+# Stops vim swap files from accidentally getting added
+*.swp
