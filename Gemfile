@@ -62,6 +62,9 @@ group :development, :test do
   # Testing suite
   gem 'rspec-rails', '~> 3.6'
   gem 'webmock'
+
+  # Oh shit it's the po po
+  gem 'rubocop', '~> 0.51.0', require: false
 end
 
 group :development do
