@@ -1,15 +1,13 @@
 require 'rails_helper'
 
 RSpec.feature 'Display header menu links', type: :feature do
-
   context 'when the user is logged in' do
-
     before do
-    	OmniAuthSpecHelper.valid_github_login_setup
+      OmniAuthSpecHelper.valid_github_login_setup
       stub_request(:get, 'https://api.github.com/user/repos?per_page=100&state=closed')
         .to_return(status: 200, body: [], headers: {})
-		end
-    
+    end
+
     specify 'the user is able to see only logged-in header menu links' do
       visit '/'
       click_link "Let's Go"
@@ -23,7 +21,6 @@ RSpec.feature 'Display header menu links', type: :feature do
         expect(page).to have_text('Welcome')
         expect(page).to have_link('Log Out')
       end
-
     end
   end
 
