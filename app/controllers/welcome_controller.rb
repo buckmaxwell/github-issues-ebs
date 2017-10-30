@@ -149,6 +149,7 @@ class WelcomeController < ApplicationController
 		def get_repos
 			repos = @client.repos(nil, {:per_page => 100, :state => :closed })
 			#next_url = @client.last_response.rels[:next]
+			return [] unless repos.any?
 			continue = repos.length == 100
 			while repos.length < 500 and continue
 				new_data = @client.last_response.rels[:next].get.data
@@ -163,7 +164,7 @@ class WelcomeController < ApplicationController
 		end
 
 		def get_milestones(repo_name)
-
+			return [] unless repo_name.present?
 			milestones = @client.milestones(repo_name, {:per_page => 100, :state => :open })
 		end
 
